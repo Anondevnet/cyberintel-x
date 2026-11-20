@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Cyber Arsenal · CyberIntel X{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Cyber Arsenal</h1>
+  <p class="muted">Indexed from Awesome-Hacking (CC0 aggregator). Each linked project has its <b>own</b> license.
+  Nothing is installed or executed. Level 1 shows the curated lists and repositories; individual tools inside each list arrive in Phase 2.</p>
+  <div class="row">
+    <form method="post" action="/actions/sync/awesome-hacking"><button>Sync from GitHub now</button></form>
+    {% if last_sync %}<span class="muted">Last sync: <span class="mono">{{ last_sync.started_at }}</span>
+      <span class="pill {{ 'ok' if last_sync.status=='ok' else 'bad' }}">{{ last_sync.status }}</span>
+      {% if last_sync.error %}<span class="err">{{ last_sync.error }}</span>{% endif %}
+      {% if last_sync.content_sha256 %}<span class="mono small">sha256 {{ last_sync.content_sha256[:12] }}</span>{% endif %}</span>
+    {% else %}<span class="muted">Never synced.</span>{% endif %}
+  </div>
+</header>
+
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="Search name, description, section…" autofocus>
+  <select name="kind">
+    <option value="">All types</option>
+    <option value="awesome_list" {% if kind=='awesome_list' %}selected{% endif %}>Curated awesome-lists</option>
+    <option value="repository" {% if kind=='repository' %}selected{% endif %}>Other repositories</option>
+    <option value="tool" {% if kind=='tool' %}selected{% endif %}>Tools (Phase 2)</option>
+  </select>
+  <select name="category">
+    <option value="">All categories</option>
+    {% for c in cats %}<option value="{{ c.slug }}" {% if category==c.slug %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+  </select>
+  <label><input type="checkbox" name="fav" value="1" {% if fav %}checked{% endif %}> Favorites</label>
+  <button>Filter</button>
+</form>
+
+<p class="muted">{{ rows|length }} result(s)</p>
+<div class="cards">
+{% for r in rows %}
+  <a class="card" href="/arsenal/{{ r.id }}">
+    <div class="card-h"><b>{{ r.name }}</b>{% if r.is_favorite %} ★{% endif %}
+      <span class="pill kind">{{ r.kind | replace('_',' ') }}</span></div>
+    <p>{{ r.description }}</p>
+    <div class="card-f">
+      <span>{{ r.section }}</span>
+      <span>license: {{ r.license or 'not yet fetched' }}</span>
+      <span>★ {{ r.stars if r.stars is not none else '—' }}</span>
+      <span class="badge {{ r.verification_status }}">{{ r.verification_status }}</span>
+    </div>
+  </a>
+{% else %}
+  <p class="muted">No resources indexed{% if q %} matching "{{ q }}"{% endif %}. {% if not q %}Run a sync above.{% endif %}</p>
+{% endfor %}
+</div>
+{% endblock %}

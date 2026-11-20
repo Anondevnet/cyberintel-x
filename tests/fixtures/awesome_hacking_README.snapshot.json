@@ -1,0 +1,8 @@
+{
+  "source": "https://raw.githubusercontent.com/Hack-with-Github/Awesome-Hacking/master/README.md",
+  "retrieved_at": "2026-11-17T19:13:09Z",
+  "sha256": "c1a2b188351480e9af92cfcc03e8eb8ad8fffce3f92fb076c06e5d0a2bcc82a2",
+  "license": "CC0-1.0 (aggregator README only; linked projects carry their own licenses)",
+  "verification_status": "verified",
+  "note": "Unmodified real snapshot used as a parser regression fixture. Not fabricated."
+}

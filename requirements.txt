@@ -1,0 +1,7 @@
+# Runtime (all pure-Python / small wheels; no ML libraries in Phase 1)
+fastapi>=0.110        # web framework + JSON API
+uvicorn>=0.29         # local ASGI server
+jinja2>=3.1           # server-rendered UI templates (no Node build step)
+httpx>=0.27           # HTTP client for GitHub / Hugging Face / Ollama checks
+# Dev / tests
+pytest>=8

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Settings & Data Sources · CyberIntel X{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Settings &amp; Data Sources</h1>
+  <p class="muted">Secrets come from environment variables or <code>.env</code>; only whether each one is configured is shown here.
+  An integration is marked OK only after a real request to that service succeeded.</p>
+  <form method="post" action="/actions/health"><button>Run health checks now</button></form>
+</header>
+
+<section class="panel">
+<h2>Integrations</h2>
+<table>
+  <tr><th>Source</th><th>Status</th><th>Auth</th><th>Last check</th><th>Last success</th><th>Latency</th><th>Detail / last error</th><th>Docs</th></tr>
+  {% for h in health %}
+  <tr>
+    <td><b>{{ h.name }}</b><div class="muted small">{{ h.notes or '' }}</div></td>
+    <td>{% if h.phase > phase %}<span class="pill planned">planned · P{{ h.phase }}</span>
+        {% elif h.checked_at is none %}<span class="pill unknown">not checked</span>
+        {% elif h.ok %}<span class="pill ok">OK</span>{% else %}<span class="pill bad">FAIL</span>{% endif %}</td>
+    <td>{% if h.auth_env %}{{ h.auth_env }}: <b>{{ 'set' if secrets.get(h.auth_env) else 'not set' }}</b>
+        {% if h.requires_auth %}<span class="muted">(required)</span>{% else %}<span class="muted">(optional)</span>{% endif %}
+        {% else %}none{% endif %}</td>
+    <td class="mono">{{ h.checked_at or '—' }}</td>
+    <td class="mono">{{ h.last_success or '—' }}</td>
+    <td class="mono">{{ (h.latency_ms ~ ' ms') if h.latency_ms is not none else '—' }}</td>
+    <td class="small">
+      {% if h.detail %}{% set d = h.detail %}{% if d.startswith('{') %}{% set j = d | fromjson %}
+        {% if j.models is defined %}{{ j.model_count }} model(s):
+          {% for m in j.models %}<span class="pill kind">{{ m.name if m.name is defined else m }}{% if m.params is defined and m.params %} · {{ m.params }}{% endif %}</span>{% endfor %}
+        {% else %}{{ d }}{% endif %}
+      {% else %}{{ d }}{% endif %}{% endif %}
+      {% if h.rate_limit %}{% set rl = h.rate_limit | fromjson %}<div>rate limit: {{ rl.remaining }}/{{ rl.limit }}</div>{% endif %}
+      {% if h.error %}<div class="err">{{ h.error }}</div>{% endif %}
+    </td>
+    <td><a href="{{ h.docs_url }}" target="_blank" rel="noopener">docs</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</section>
+
+<div class="grid2">
+<section class="panel">
+<h2>Configuration</h2>
+<table class="kv">
+  {% for k, v in cfg.items() %}<tr><th>{{ k }}</th><td class="mono">{{ v }}</td></tr>{% endfor %}
+  <tr><th>free disk</th><td class="mono">{{ disk.free_gb }} / {{ disk.total_gb }} GB</td></tr>
+</table>
+</section>
+<section class="panel">
+<h2>Database schema</h2>
+<table><tr><th>Version</th><th>Name</th><th>Applied</th></tr>
+{% for v in schema %}<tr><td>{{ v.version }}</td><td>{{ v.name }}</td><td class="mono">{{ v.applied_at }}</td></tr>{% endfor %}
+</table>
+<p class="muted small">Migrations are append-only. The database is backed up automatically before any migration (data/backups/).</p>
+</section>
+</div>
+{% endblock %}

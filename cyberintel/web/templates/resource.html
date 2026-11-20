@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ r.name }} · Cyber Arsenal{% endblock %}
+{% block content %}
+<header class="page-head">
+  <a href="/arsenal" class="muted">← Cyber Arsenal</a>
+  <h1>{{ r.name }} {% if r.is_favorite %}★{% endif %}</h1>
+  <p>{{ r.description }}</p>
+  <form method="post" action="/arsenal/{{ r.id }}/favorite"><button>{{ 'Remove favorite' if r.is_favorite else 'Add to favorites' }}</button></form>
+</header>
+<section class="panel">
+<table class="kv">
+  <tr><th>URL</th><td><a href="{{ r.url }}" target="_blank" rel="noopener noreferrer">{{ r.url }}</a></td></tr>
+  <tr><th>Type</th><td>{{ r.kind | replace('_',' ') }}</td></tr>
+  <tr><th>Category</th><td>{{ r.category_name or '—' }}</td></tr>
+  <tr><th>README section</th><td>{{ r.section }}</td></tr>
+  <tr><th>Developer / org</th><td>{{ r.gh_owner or '—' }}</td></tr>
+  <tr><th>License</th><td>{{ r.license or 'Not yet fetched (Phase 2 GitHub enrichment). Aggregator CC0 does NOT apply.' }}</td></tr>
+  <tr><th>Stars / forks</th><td>{{ r.stars if r.stars is not none else '—' }} / {{ r.forks if r.forks is not none else '—' }}</td></tr>
+  <tr><th>Last pushed</th><td>{{ r.pushed_at or '—' }}</td></tr>
+  <tr><th>Link status</th><td>{{ r.link_status or 'not checked' }}</td></tr>
+  <tr><th>Safety classification</th><td>{{ r.safety_class }}</td></tr>
+  <tr><th>Indexed child tools</th><td>{{ children }}</td></tr>
+</table>
+</section>
+<section class="panel">
+<h2>Provenance</h2>
+<table class="kv">
+  <tr><th>Source</th><td>{{ r.source_id }}</td></tr>
+  <tr><th>Source reference</th><td class="mono small">{{ r.source_ref }}</td></tr>
+  <tr><th>Retrieved</th><td class="mono">{{ r.retrieved_at }}</td></tr>
+  <tr><th>First / last seen</th><td class="mono">{{ r.first_seen }} / {{ r.last_seen }}</td></tr>
+  <tr><th>Verification</th><td><span class="badge {{ r.verification_status }}">{{ r.verification_status }}</span>
+      <span class="muted">means the entry was read directly from the named source; it is not an endorsement of the tool.</span></td></tr>
+</table>
+</section>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ mod[1] }} · CyberIntel X{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>{{ mod[1] }}</h1>
+  <p><span class="pill planned">Not implemented yet · scheduled for Phase {{ mod[2] }}</span></p>
+</header>
+<section class="panel">
+  <p>This module has no working functionality yet, and it shows no placeholder or sample data on purpose.</p>
+  {% if plan %}<p><b>Planned scope:</b> {{ plan }}</p>{% endif %}
+  <p class="muted">See docs/IMPLEMENTATION_PLAN.md for sequencing and safety constraints.</p>
+</section>
+{% endblock %}

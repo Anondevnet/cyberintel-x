@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Dataset Explorer · CyberIntel X{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Cybersecurity Dataset Explorer</h1>
+  <p class="muted"><a href="https://huggingface.co/datasets/{{ dataset_id }}" target="_blank" rel="noopener">{{ dataset_id }}</a>.
+  Phase 1 indexes <b>metadata and the file list only</b>; nothing is downloaded. Record search arrives in Phase 2 with user-selected, disk-checked downloads.</p>
+  <div class="row">
+    <form method="post" action="/actions/sync/huggingface-metadata"><button>Check access &amp; index metadata</button></form>
+    <span class="muted">HF_TOKEN: <b>{{ 'configured' if token_set else 'not set' }}</b></span>
+    <span class="muted {% if not disk.ok_for_downloads %}err{% endif %}">Free disk: {{ disk.free_gb }} GB
+      {% if not disk.ok_for_downloads %}(below {{ disk.min_free_gb }} GB, downloads will be refused){% endif %}</span>
+  </div>
+</header>
+
+{% if not meta %}
+<section class="panel"><p>Not checked yet.</p>
+<p class="muted">This dataset is <b>gated</b> per its Hub page. To enable it: sign in at huggingface.co, open the dataset page and accept its conditions,
+create a read token, put it in <code>.env</code> as <code>HF_TOKEN=…</code>, restart, then press the button above.</p></section>
+{% else %}
+<section class="panel">
+<h2>Access &amp; metadata</h2>
+<table class="kv">
+  <tr><th>Access status</th><td><span class="pill status-{{ meta.access_status }}">{{ meta.access_status | replace('_',' ') }}</span></td></tr>
+  <tr><th>Gated</th><td>{{ meta.gated or '—' }}</td></tr>
+  <tr><th>License (from card)</th><td>{{ meta.license or '—' }}</td></tr>
+  <tr><th>Revision</th><td class="mono">{{ meta.sha or '—' }}</td></tr>
+  <tr><th>Last modified</th><td class="mono">{{ meta.last_modified or '—' }}</td></tr>
+  <tr><th>Files indexed</th><td>{{ meta.file_count if meta.file_count is not none else '—' }}</td></tr>
+  <tr><th>Total size (from tree)</th><td>{% if meta.total_bytes %}{{ '%.1f' | format(meta.total_bytes / 1e9) }} GB{% else %}—{% endif %}</td></tr>
+  <tr><th>Retrieved</th><td class="mono">{{ meta.retrieved_at }}</td></tr>
+  <tr><th>Verification</th><td><span class="badge {{ meta.verification_status }}">{{ meta.verification_status }}</span></td></tr>
+  {% if meta.last_error %}<tr><th>Last error</th><td class="err">{{ meta.last_error }}</td></tr>{% endif %}
+</table>
+</section>
+{% endif %}
+
+{% if files %}
+<section class="panel">
+<h2>File tree ({{ files|length }}{% if files|length == 1000 %}+ shown{% endif %})</h2>
+<table>
+  <tr><th>Path</th><th>Size</th><th>LFS</th><th>Download</th></tr>
+  {% for f in files %}
+  <tr><td class="mono small">{{ f.path }}</td><td class="mono">{% if f.size %}{{ '%.1f' | format(f.size / 1e6) }} MB{% else %}—{% endif %}</td>
+      <td>{{ 'yes' if f.is_lfs else 'no' }}</td><td>{{ f.download_status | replace('_',' ') }}</td></tr>
+  {% endfor %}
+</table>
+</section>
+{% endif %}
+
+<section class="panel">
+<h2>Recent checks</h2>
+<table><tr><th>Started</th><th>Status</th><th>Files seen</th><th>Error</th></tr>
+{% for r in runs %}<tr><td class="mono">{{ r.started_at }}</td><td>{{ r.status }}</td><td>{{ r.items_seen }}</td><td class="err">{{ r.error or '' }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">None yet.</td></tr>{% endfor %}
+</table>
+</section>
+{% endblock %}

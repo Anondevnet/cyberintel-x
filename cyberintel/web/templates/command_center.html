@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Command Center · CyberIntel X{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Command Center</h1>
+  <p class="muted">Every number below is computed from the local database. Nothing here is sample data.</p>
+</header>
+
+<section class="tiles">
+  <div class="tile"><b>{{ stats.resources }}</b><span>Indexed resources</span></div>
+  <div class="tile"><b>{{ stats.categories }}</b><span>Categories</span></div>
+  <div class="tile"><b>{{ stats.awesome_lists }}</b><span>Curated awesome-lists</span></div>
+  <div class="tile"><b>{{ stats.repositories }}</b><span>Other repositories</span></div>
+  <div class="tile"><b>{{ stats.tools }}</b><span>Individual tools <small>(Phase 2)</small></span></div>
+  <div class="tile"><b>{{ stats.new_24h }}</b><span>New in last 24h</span></div>
+  <div class="tile"><b>{{ stats.dataset_files }}</b><span>Dataset files indexed</span></div>
+  <div class="tile"><b>{{ stats.dataset_records }}</b><span>Dataset records ingested</span></div>
+  <div class="tile"><b class="status-{{ stats.dataset_access }}">{{ stats.dataset_access | replace('_',' ') }}</b><span>Dataset access</span></div>
+  <div class="tile {% if not disk.ok_for_downloads %}warn{% endif %}"><b>{{ disk.free_gb }} GB</b><span>Free disk (min {{ disk.min_free_gb }} for downloads)</span></div>
+</section>
+
+<div class="grid2">
+<section class="panel">
+  <h2>Data source health</h2>
+  <table>
+    <tr><th>Source</th><th>Status</th><th>Last check</th><th>Last success</th><th>Last sync</th></tr>
+    {% for h in health %}
+    <tr>
+      <td>{{ h.name }}</td>
+      <td>
+        {% if h.phase > phase %}<span class="pill planned">planned · P{{ h.phase }}</span>
+        {% elif h.checked_at is none %}<span class="pill unknown">not checked</span>
+        {% elif h.ok %}<span class="pill ok">OK</span>
+        {% else %}<span class="pill bad">FAIL</span>{% endif %}
+      </td>
+      <td class="mono">{{ h.checked_at or '—' }}</td>
+      <td class="mono">{{ h.last_success or '—' }}</td>
+      <td class="mono">{{ h.last_sync or '—' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <form method="post" action="/actions/health"><button>Run health checks</button></form>
+</section>
+
+<section class="panel">
+  <h2>Recent synchronizations</h2>
+  <table>
+    <tr><th>Source</th><th>Job</th><th>Started</th><th>Status</th><th>Seen/New/Upd</th></tr>
+    {% for r in syncs %}
+    <tr><td>{{ r.source_id }}</td><td>{{ r.job }}</td><td class="mono">{{ r.started_at }}</td>
+        <td><span class="pill {{ 'ok' if r.status=='ok' else 'bad' if r.status=='error' else 'unknown' }}">{{ r.status }}</span></td>
+        <td class="mono">{{ r.items_seen }}/{{ r.items_new }}/{{ r.items_updated }}</td></tr>
+    {% else %}<tr><td colspan="5" class="muted">No syncs yet. Use Cyber Arsenal or Dataset Explorer to run one.</td></tr>{% endfor %}
+  </table>
+</section>
+</div>
+
+<section class="panel">
+  <h2>Activity feed</h2>
+  <ul class="feed">
+  {% for a in activity %}
+    <li><span class="mono">{{ a.ts }}</span>
+        <span class="kind {{ a.kind }}">{{ a.kind }}</span>
+        {% if a.source_id %}<span class="src">{{ a.source_id }}</span>{% endif %}
+        {% if a.verification_status %}<span class="badge {{ a.verification_status }}">{{ a.verification_status }}</span>{% endif %}
+        {{ a.message }}</li>
+  {% else %}<li class="muted">No activity yet.</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}CyberIntel X{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">CYBERINTEL<span>X</span></div>
+  <div class="ver">v{{ version }} · local only</div>
+  <nav>
+  {% for slug, label, ph in modules %}
+    <a href="/{{ slug }}" class="{% if slug == active %}active{% endif %} {% if ph > phase %}planned{% endif %}">
+      {{ label }}{% if ph > phase %}<em>P{{ ph }}</em>{% endif %}
+    </a>
+  {% endfor %}
+  </nav>
+  <div class="legend">
+    <span class="badge verified">verified</span>
+    <span class="badge unverified">unverified</span>
+    <span class="badge historical">historical</span>
+    <span class="badge simulated">simulated</span>
+  </div>
+</aside>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>
