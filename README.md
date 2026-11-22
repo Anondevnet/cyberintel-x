@@ -10,8 +10,9 @@ shared search, provenance and AI-retrieval layer.
 
 ## Quick start (macOS, Apple Silicon)
 
+From the repository root:
+
 ```bash
-cd ~/projects/cyberintel-x
 ./run.sh                 # creates .venv, installs 4 small deps, copies .env, serves
 open http://127.0.0.1:8787
 ```
